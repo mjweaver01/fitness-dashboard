@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+/* Chart + chrome tokens — light and dark are both deliberate, not a flip. */
+:root {
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+
+  --series: #2a78d6; /* weight line, PR bars */
+  --series-wash: rgba(42, 120, 214, 0.1);
+  --heat-me: #1c5cab; /* ordinal ramp: heaviest → lightest work */
+  --heat-de: #3987e5;
+  --heat-light: #86b6ef;
+  --good: #006300; /* delta / goals-met text */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+
+    --series: #3987e5;
+    --series-wash: rgba(57, 135, 229, 0.12);
+    --heat-me: #9ec5f4; /* on dark, more intense = lighter */
+    --heat-de: #5598e7;
+    --heat-light: #184f95;
+    --good: #0ca30c;
+  }
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
