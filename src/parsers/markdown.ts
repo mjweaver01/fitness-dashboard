@@ -39,3 +39,33 @@ export function toIsoDate(text: string): string | null {
   if (fuzzy && month) return `${fuzzy[2]}-${month}-15`;
   return null;
 }
+
+/** Split a note into its `### ` subsections, scoped to one `## ` section's body. */
+export function subsections(body: string): { heading: string; body: string }[] {
+  const out: { heading: string; body: string }[] = [];
+  let current: { heading: string; body: string } | null = null;
+  for (const line of body.split('\n')) {
+    const match = line.match(/^### (.+)$/);
+    if (match?.[1]) {
+      current = { heading: match[1].trim(), body: '' };
+      out.push(current);
+    } else if (current) {
+      current.body += line + '\n';
+    }
+  }
+  return out;
+}
+
+/** "255x3" → { weight: 255, reps: 3 }; "**215**" → { weight: 215 }. Null when there's no number. */
+export function parseLoad(text: string): { weight: number; reps?: number } | null {
+  const match = text.match(/(\d+(?:\.\d+)?)\s*(?:x\s*(\d+))?/i);
+  if (!match?.[1]) return null;
+  const weight = Number(match[1]);
+  if (Number.isNaN(weight)) return null;
+  return match[2] ? { weight, reps: Number(match[2]) } : { weight };
+}
+
+/** Strips markdown emphasis so table cells render as plain text. */
+export function plain(text: string): string {
+  return text.replace(/\*\*/g, '').replace(/^\*|\*$/g, '').trim();
+}

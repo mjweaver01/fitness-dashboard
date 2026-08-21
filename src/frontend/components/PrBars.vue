@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <h2 class="font-semibold">Current PRs</h2>
-    <p class="text-sm text-[var(--ink-2)]">From the Fitness Profile</p>
+    <p class="text-sm text-[var(--ink-2)]">From the PR Log — the vault's source of truth</p>
 
     <div class="mt-4 space-y-3">
       <div v-for="pr in prs" :key="pr.lift">
@@ -12,7 +12,7 @@
         <div class="mt-1 flex items-center gap-2">
           <div class="h-5 rounded-r-[4px] bg-[var(--series)] transition-[filter] hover:brightness-110"
             :style="{ width: barWidth(pr.weight) }" />
-          <span class="text-sm font-semibold tabular-nums">{{ pr.weight }}</span>
+          <span class="text-sm font-semibold tabular-nums whitespace-nowrap">{{ load(pr) }}</span>
         </div>
       </div>
     </div>
@@ -34,6 +34,10 @@ export default {
     },
   },
   methods: {
+    /** Rep maxes keep their reps — "255x3" is not the same claim as "255" */
+    load(pr: PrRecord): string {
+      return pr.reps ? `${pr.weight} × ${pr.reps}` : `${pr.weight}`;
+    },
     /** Bars share one scale; 88% leaves room for the value label. */
     barWidth(weight: number): string {
       return `${(weight / this.maxWeight) * 88}%`;

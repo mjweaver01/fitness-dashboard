@@ -21,6 +21,19 @@
       </section>
 
       <TrainingHeatmap :sessions="dashboard.sessions" />
+
+      <section class="grid gap-6 lg:grid-cols-2">
+        <PrHistory :history="dashboard.prHistory" />
+        <MeasurementTable :measurements="dashboard.measurements" />
+      </section>
+
+      <AccessoryWeights
+        :working-weights="dashboard.workingWeights"
+        :waves="dashboard.waves"
+        :actuals="dashboard.accessoryActuals" />
+
+      <InjuryLog :cautions="dashboard.cautions" :incidents="dashboard.incidents" />
+
       <MealTable :meals="dashboard.meals" />
     </template>
   </main>
@@ -33,11 +46,18 @@ import WeightChart from './components/WeightChart.vue';
 import PrBars from './components/PrBars.vue';
 import TrainingHeatmap from './components/TrainingHeatmap.vue';
 import MealTable from './components/MealTable.vue';
+import PrHistory from './components/PrHistory.vue';
+import MeasurementTable from './components/MeasurementTable.vue';
+import AccessoryWeights from './components/AccessoryWeights.vue';
+import InjuryLog from './components/InjuryLog.vue';
 import { shortDate } from './format';
 
 export default {
   name: 'App',
-  components: { StatTile, WeightChart, PrBars, TrainingHeatmap, MealTable },
+  components: {
+    StatTile, WeightChart, PrBars, TrainingHeatmap, MealTable,
+    PrHistory, MeasurementTable, AccessoryWeights, InjuryLog,
+  },
   data: () => ({
     dashboard: null as Dashboard | null,
     error: '',
@@ -56,7 +76,7 @@ export default {
     weightDelta(): string {
       if (!this.latest || !this.baseline || this.latest === this.baseline) return '';
       const delta = this.latest.weight - this.baseline.weight;
-      return `+${delta} lbs since ${shortDate(this.baseline.date)}`;
+      return `${delta >= 0 ? '+' : ''}${delta} lbs since ${shortDate(this.baseline.date)}`;
     },
     /** The three main lifts, in the order the profile ranks them */
     headlinePrs(): PrRecord[] {
