@@ -3,7 +3,7 @@
     <h2 class="font-semibold">Training</h2>
     <p class="text-sm text-[var(--ink-2)]">Conjugate week by week — heavier work, more ink</p>
 
-    <div class="relative mt-4 overflow-x-auto">
+    <div class="mt-4 overflow-x-auto">
       <div class="flex gap-1">
         <!-- day-of-week rail -->
         <div class="mr-1 grid grid-rows-7 gap-1 text-[10px] text-[var(--ink-muted)]">
@@ -17,25 +17,29 @@
             :class="cell.session ? 'cursor-pointer' : 'border border-[var(--grid)]'"
             :style="cellStyle(cell)"
             tabindex="0"
-            @pointerenter="hoveredCell = cell"
-            @focus="hoveredCell = cell"
-            @pointerleave="hoveredCell = null"
-            @blur="hoveredCell = null" />
+            @pointerenter="showTip(cell, $event)"
+            @focus="showTip(cell, $event)"
+            @pointerleave="hideTip"
+            @blur="hideTip" />
           <span class="text-center text-[10px] text-[var(--ink-muted)]">{{ shortDate(week.monday) }}</span>
         </div>
       </div>
+    </div>
 
-      <!-- tooltip: session title leads -->
-      <div v-if="hoveredCell?.session" class="pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 shadow-sm">
+    <!-- tooltip: session title leads. Fixed + teleported so the heatmap's
+         horizontal scroller can't clip it. -->
+    <Teleport to="body">
+      <div v-if="hoveredCell?.session" ref="tip" :style="tipStyle"
+        class="pointer-events-none fixed z-50 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 shadow-sm">
         <p class="text-sm font-semibold whitespace-nowrap">{{ hoveredCell.session.title }}</p>
-        <p class="text-xs text-[var(--ink-2)]">
+        <p class="text-xs whitespace-nowrap text-[var(--ink-2)]">
           {{ shortDate(hoveredCell.date) }}{{ hoveredCell.session.planned ? ' · planned' : '' }}
         </p>
-        <p v-for="pr in hoveredCell.session.prs" :key="pr.lift" class="text-xs font-medium text-[var(--good)]">
+        <p v-for="pr in hoveredCell.session.prs" :key="pr.lift" class="text-xs font-medium whitespace-nowrap text-[var(--good)]">
           PR — {{ pr.lift }} {{ pr.weight }}
         </p>
       </div>
-    </div>
+    </Teleport>
 
     <!-- legend: identity never rides on color alone -->
     <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--ink-2)]">
@@ -68,6 +72,7 @@ export default {
   },
   data: () => ({
     hoveredCell: null as Cell | null,
+    tipStyle: { left: '0px', top: '0px', visibility: 'hidden' } as Record<string, string>,
     dayNames: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
     typeColor: {
       ME: 'var(--heat-me)',
@@ -116,6 +121,30 @@ export default {
   },
   methods: {
     shortDate,
+    /** Anchor the tooltip above the hovered cell, nudged clear of the viewport edges. */
+    showTip(cell: Cell, event: Event) {
+      if (!cell.session) return;
+      this.hoveredCell = cell;
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      this.tipStyle = { left: '0px', top: '0px', visibility: 'hidden' };
+      this.$nextTick(() => {
+        const tip = this.$refs.tip as HTMLElement | undefined;
+        if (!tip) return;
+        const { width, height } = tip.getBoundingClientRect();
+        const margin = 8;
+        const left = Math.min(
+          Math.max(margin, rect.left + rect.width / 2 - width / 2),
+          window.innerWidth - width - margin,
+        );
+        // Flip below the cell when there isn't room above.
+        const above = rect.top - height - margin;
+        const top = above >= margin ? above : rect.bottom + margin;
+        this.tipStyle = { left: `${left}px`, top: `${top}px`, visibility: 'visible' };
+      });
+    },
+    hideTip() {
+      this.hoveredCell = null;
+    },
     cellStyle(cell: Cell): Record<string, string> {
       if (!cell.session) return {};
       return {
