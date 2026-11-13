@@ -51,6 +51,7 @@ import MeasurementTable from './components/MeasurementTable.vue';
 import AccessoryWeights from './components/AccessoryWeights.vue';
 import InjuryLog from './components/InjuryLog.vue';
 import { shortDate } from './format';
+import { loadDashboard } from './loadDashboard';
 
 export default {
   name: 'App',
@@ -86,10 +87,7 @@ export default {
   },
   async created() {
     try {
-      const res = await fetch('/api/dashboard');
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? res.statusText);
-      this.dashboard = body;
+      this.dashboard = await loadDashboard();
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to load dashboard';
     }

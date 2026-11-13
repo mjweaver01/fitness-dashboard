@@ -27,18 +27,30 @@ bun run dev        # API on :3001 + Vite on :5173
 
 Production: `bun run build && bun run start` — one Bun process serves the SPA and API.
 
+### GitHub Pages (live online)
+
+`.github/workflows/pages.yml` builds a static copy on every push to `master` with
+`VITE_VAULT_URL` pointing at the public digi-twin repo on `raw.githubusercontent.com`.
+The browser fetches the vault markdown directly and runs the same parsers client-side,
+so pushing a vault update shows up online without a redeploy (GitHub's raw CDN caches
+for ~5 minutes). Only dashboard code changes trigger a rebuild.
+
+One-time setup: repo **Settings → Pages → Source: GitHub Actions**.
+
 ## Config
 
 | Env | Default | Purpose |
 |-----|---------|---------|
 | `VAULT_PATH` | `~/Websites/digi-twin` | Vault root (reads its `Fitness/` folder) |
 | `PORT` | `3001` | API / production server port |
+| `VITE_VAULT_URL` | unset | Build-time. When set, the SPA fetches vault files from this base URL instead of `/api` (used for Pages) |
 
 ## Structure
 
 ```
 src/
   index.ts        # Bun.serve entry — API route + static SPA
+  shared/         # buildDashboard — vault files → Dashboard, used by server and static build
   endpoints/      # HTTP handlers
   parsers/        # markdown → typed data (weight, workouts, meals, profile PRs)
   types/          # shared FE/BE types
